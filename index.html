@@ -58,46 +58,6 @@ for more information about solar system, here is a link to official NASA website
 <input type="checkbox" value="checkbox">neptune
 <br>
 <H4>IF YOU WANT TO KNOW MORE ABOUT OUR SOLAR SYSTEM IN DETAIL PLEASE SIGN UP! OR IF YOU ARE ALREADY LOGGED IN THEN JUST PLS LOGIN!</H4><BR></form>
-    <h2>🚀 Sign Up for Solar System Access</h2>
-
-  <input type="text" id="username" placeholder="Username" required><br>
-  <input type="email" id="email" placeholder="Email" required><br>
-  <input type="password" id="password" placeholder="Password" required><br>
-  <button onclick="signUp()">Sign Up</button>
-
-  <p>Already have an account? <a href="https://arjun201301.github.io/login/">Login here</a></p>
-
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyAg7LaSMIx6Paylbzfb8t_Y_2V_HEHM_ec",
-      authDomain: "solar-system-auth.firebaseapp.com",
-      projectId: "solar-system-auth",
-      storageBucket: "solar-system-auth.firebasestorage.app",
-      messagingSenderId: "838410269137",
-      appId: "1:838410269137:web:0f0f8965eb08eb28f1b0f0"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-
-    function signUp() {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-      const username = document.getElementById("username").value;
-
-      auth.createUserWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-          const user = userCredential.user;
-          return user.updateProfile({ displayName: username });
-        })
-        .then(() => {
-          alert("Sign up successful! 🚀");
-          window.location.href = "https://arjun201301.github.io/welcome/";
-        })
-        .catch((error) => {
-          alert("Error: " + error.message);
-        });
-    }
-  </script>
+   <a href="auth.html">Sign Up or Login</a>
 </body>
 </html>
