@@ -16,8 +16,11 @@
   <script src="https://www.gstatic.com/firebasejs/10.5.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.5.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore-compat.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@2/dist/email.min.js"></script>
-  
+  <script type="module">
+    import emailjs from 'https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js';
+    window.emailjs = emailjs;
+  </script>
+
   <style>
     body {
       background-color: #FFD700;
@@ -83,7 +86,9 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    emailjs.init("0w3s6T28M7BifO6rE"); // Your public key
+    window.onload = () => {
+      emailjs.init("0w3s6T28M7BifO6rE"); // Your EmailJS Public Key
+    };
 
     function toggleForms(showLogin) {
       document.getElementById('login-section').style.display = showLogin ? 'block' : 'none';
@@ -155,23 +160,21 @@
           }
 
           const username = snapshot.docs[0].data().username;
-          const resetLink = "https://solar-system-auth.firebaseapp.com"; // Or your custom reset page if needed
+          const resetLink = "https://solar-system-auth.firebaseapp.com"; // Update if needed
 
-          emailjs.send("service_pcuznr5", "template_pm5w3zq", {
+          return emailjs.send("service_pcuznr5", "template_pm5w3zq", {
             to_email: email,
             username: username,
             reset_link: resetLink
-          })
-          .then(() => {
-            alert("Reset link sent to " + email + " for user \"" + username + "\"");
-          })
-          .catch(error => {
-            alert("Error sending reset link: " + error.text);
           });
+        })
+        .then(() => {
+          alert("Password reset email sent!");
+        })
+        .catch(error => {
+          alert("Error sending reset link: " + error.text);
         });
     }
   </script>
 </body>
 </html>
-
-
