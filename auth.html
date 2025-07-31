@@ -13,12 +13,47 @@
   <meta charset="UTF-8">
   <title>Solar System Login / Signup</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/10.5.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.5.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore-compat.js"></script>
+
+  <!-- EmailJS v3 -->
   <script type="module">
     import emailjs from 'https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js';
-    window.emailjs = emailjs;
+
+    // Initialize EmailJS
+    emailjs.init("0w3s6T28M7BifO6rE");
+
+    window.resetPassword = function () {
+      const email = document.getElementById("reset-email").value;
+      if (!email) return alert("Please enter your email to reset password.");
+
+      db.collection("users").where("email", "==", email).get()
+        .then(snapshot => {
+          if (snapshot.empty) {
+            alert("No user found with this email.");
+            return;
+          }
+
+          const username = snapshot.docs[0].data().username;
+          const resetLink = "https://solar-system-auth.firebaseapp.com"; // Your actual reset page
+
+          return emailjs.send("service_pcuznr5", "template_pm5w3zq", {
+            to_email: email,
+            username: username,
+            reset_link: resetLink
+          });
+        })
+        .then(() => {
+          alert("Password reset email sent!");
+        })
+        .catch(error => {
+          console.error("EmailJS Error:", error);
+          alert("Error sending reset link: " + (error?.text || error?.message || "Unknown error"));
+        });
+    };
   </script>
 
   <style>
@@ -67,7 +102,8 @@
       <button onclick="login()">Login</button>
       <br><br>
       <input type="email" id="reset-email" placeholder="Enter your email to reset password"><br>
-      <button onclick="resetPassword()">Forgot Password?</button>
+     <a href="{{reset_link}}">Reset your password</a>
+
       <p class="link">Don't have an account? <a href="#" onclick="toggleForms(false)">Sign Up</a></p>
     </div>
   </div>
@@ -85,10 +121,6 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
-
-    window.onload = () => {
-      emailjs.init("0w3s6T28M7BifO6rE"); // Your EmailJS Public Key
-    };
 
     function toggleForms(showLogin) {
       document.getElementById('login-section').style.display = showLogin ? 'block' : 'none';
@@ -147,44 +179,6 @@
           if (error) alert("Login error: " + error.message);
         });
     }
-
-   function resetPassword() {
-  const email = document.getElementById("reset-email").value;
-  if (!email) return alert("Please enter your email to reset password.");
-
-  db.collection("users").where("email", "==", email).get()
-    .then(snapshot => {
-      if (snapshot.empty) {
-        alert("No user found with this email.");
-        return;
-      }
-
-      const userData = snapshot.docs[0].data();
-      const username = userData.username;
-      const resetLink = "https://solar-system-auth.firebaseapp.com"; // your real reset link
-
-      // Log what is being sent
-      console.log("Sending EmailJS with:", {
-        to_email: email,
-        username: username,
-        reset_link: resetLink
-      });
-
-      return emailjs.send("service_pcuznr5", "template_pm5w3zq", {
-        to_email: email,
-        username: username,
-        reset_link: resetLink
-      });
-    })
-    .then(() => {
-      alert("Password reset email sent!");
-    })
-    .catch(error => {
-      console.error("EmailJS Error:", error);
-      alert("Error sending reset link: " + (error?.text || error?.message || "Unknown error"));
-    });
-}
-
   </script>
 </body>
 </html>
