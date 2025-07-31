@@ -148,33 +148,43 @@
         });
     }
 
-    function resetPassword() {
-      const email = document.getElementById("reset-email").value;
-      if (!email) return alert("Please enter your email to reset password.");
+   function resetPassword() {
+  const email = document.getElementById("reset-email").value;
+  if (!email) return alert("Please enter your email to reset password.");
 
-      db.collection("users").where("email", "==", email).get()
-        .then(snapshot => {
-          if (snapshot.empty) {
-            alert("No user found with this email.");
-            return;
-          }
+  db.collection("users").where("email", "==", email).get()
+    .then(snapshot => {
+      if (snapshot.empty) {
+        alert("No user found with this email.");
+        return;
+      }
 
-          const username = snapshot.docs[0].data().username;
-          const resetLink = "https://solar-system-auth.firebaseapp.com"; // Update if needed
+      const userData = snapshot.docs[0].data();
+      const username = userData.username;
+      const resetLink = "https://solar-system-auth.firebaseapp.com"; // your real reset link
 
-          return emailjs.send("service_pcuznr5", "template_pm5w3zq", {
-            to_email: email,
-            username: username,
-            reset_link: resetLink
-          });
-        })
-        .then(() => {
-          alert("Password reset email sent!");
-        })
-        .catch(error => {
-          alert("Error sending reset link: " + error.text);
-        });
-    }
+      // Log what is being sent
+      console.log("Sending EmailJS with:", {
+        to_email: email,
+        username: username,
+        reset_link: resetLink
+      });
+
+      return emailjs.send("service_pcuznr5", "template_pm5w3zq", {
+        to_email: email,
+        username: username,
+        reset_link: resetLink
+      });
+    })
+    .then(() => {
+      alert("Password reset email sent!");
+    })
+    .catch(error => {
+      console.error("EmailJS Error:", error);
+      alert("Error sending reset link: " + (error?.text || error?.message || "Unknown error"));
+    });
+}
+
   </script>
 </body>
 </html>
