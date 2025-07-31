@@ -1,21 +1,23 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-XC6EM5CR0G"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XC6EM5CR0G"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){ dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-XC6EM5CR0G');
+  </script>
 
-  gtag('config', 'G-XC6EM5CR0G');
-</script>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Solar System Login / Signup</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://www.gstatic.com/firebasejs/10.5.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.5.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@2/dist/email.min.js"></script>
+  
   <style>
     body {
       background-color: #FFD700;
@@ -53,20 +55,18 @@
     <input type="email" id="signup-email" placeholder="Email" required><br>
     <input type="password" id="signup-password" placeholder="Password" required><br>
     <button onclick="signUp()">Sign Up</button>
-
     <p class="link">Already have an account? <a href="#" onclick="toggleForms(true)">Login</a></p>
 
     <div id="login-section" style="display:none;">
-  <h2>🔐 Login</h2>
-  <input type="text" id="login-username" placeholder="Username" required><br>
-  <input type="password" id="login-password" placeholder="Password" required><br>
-  <button onclick="login()">Login</button>
-<br><br>
-<input type="email" id="reset-email" placeholder="Enter your email to reset password"><br>
-<button onclick="resetPassword()">Forgot Password?</button>
-
-</div>
-
+      <h2>🔐 Login</h2>
+      <input type="text" id="login-username" placeholder="Username" required><br>
+      <input type="password" id="login-password" placeholder="Password" required><br>
+      <button onclick="login()">Login</button>
+      <br><br>
+      <input type="email" id="reset-email" placeholder="Enter your email to reset password"><br>
+      <button onclick="resetPassword()">Forgot Password?</button>
+      <p class="link">Don't have an account? <a href="#" onclick="toggleForms(false)">Sign Up</a></p>
+    </div>
   </div>
 
   <script>
@@ -83,6 +83,8 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
+    emailjs.init("0w3s6T28M7BifO6rE"); // Your public key
+
     function toggleForms(showLogin) {
       document.getElementById('login-section').style.display = showLogin ? 'block' : 'none';
     }
@@ -94,7 +96,6 @@
 
       if (!username || !email || !password) return alert("Fill all fields!");
 
-      // Check if username already exists
       db.collection("users").where("username", "==", username).get()
         .then(snapshot => {
           if (!snapshot.empty) {
@@ -102,8 +103,7 @@
             return;
           }
 
-          // Create account
-          auth.createUserWithEmailAndPassword(email, password)
+          return auth.createUserWithEmailAndPassword(email, password)
             .then((cred) => {
               return db.collection("users").doc(cred.user.uid).set({
                 username: username,
@@ -113,35 +113,65 @@
             .then(() => {
               alert("Signed up successfully!");
               window.location.href = "https://arjun201301.github.io/welcome/";
-            })
-            .catch(error => alert("Error: " + error.message));
+            });
+        })
+        .catch(error => alert("Signup Error: " + error.message));
+    }
+
+    function login() {
+      const username = document.getElementById("login-username").value;
+      const password = document.getElementById("login-password").value;
+
+      if (!username || !password) return alert("Fill all fields!");
+
+      db.collection("users").where("username", "==", username).get()
+        .then(snapshot => {
+          if (snapshot.empty) {
+            alert("Username not found.");
+            return;
+          }
+
+          const email = snapshot.docs[0].data().email;
+          return auth.signInWithEmailAndPassword(email, password);
+        })
+        .then(() => {
+          alert("Login successful!");
+          window.location.href = "https://arjun201301.github.io/welcome/";
+        })
+        .catch(error => {
+          if (error) alert("Login error: " + error.message);
         });
     }
 
     function resetPassword() {
-  const email = document.getElementById("reset-email").value;
-  if (!email) return alert("Please enter your email to reset password.");
+      const email = document.getElementById("reset-email").value;
+      if (!email) return alert("Please enter your email to reset password.");
 
-  // Look up the username
-  db.collection("users").where("email", "==", email).get()
-    .then(snapshot => {
-      if (snapshot.empty) {
-        alert("No user found with this email.");
-        return;
-      }
+      db.collection("users").where("email", "==", email).get()
+        .then(snapshot => {
+          if (snapshot.empty) {
+            alert("No user found with this email.");
+            return;
+          }
 
-      const username = snapshot.docs[0].data().username;
+          const username = snapshot.docs[0].data().username;
+          const resetLink = "https://solar-system-auth.firebaseapp.com"; // Or your custom reset page if needed
 
-      auth.sendPasswordResetEmail(email)
-        .then(() => {
-          alert(`Password reset email sent to ${email} for user "${username}"`);
-        })
-        .catch(error => {
-          alert("Error sending reset email: " + error.message);
+          emailjs.send("service_pcuznr5", "template_pm5w3zq", {
+            to_email: email,
+            username: username,
+            reset_link: resetLink
+          })
+          .then(() => {
+            alert("Reset link sent to " + email + " for user \"" + username + "\"");
+          })
+          .catch(error => {
+            alert("Error sending reset link: " + error.text);
+          });
         });
-    });
-}
-
+    }
   </script>
 </body>
 </html>
+
+
