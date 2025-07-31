@@ -61,8 +61,10 @@
   <input type="text" id="login-username" placeholder="Username" required><br>
   <input type="password" id="login-password" placeholder="Password" required><br>
   <button onclick="login()">Login</button>
-  <p class="link"><a href="#" onclick="resetPassword()">Forgot Password?</a></p>
-  <p class="link">Don't have an account? <a href="#" onclick="toggleForms(false)">Sign Up</a></p>
+<br><br>
+<input type="email" id="reset-email" placeholder="Enter your email to reset password"><br>
+<button onclick="resetPassword()">Forgot Password?</button>
+
 </div>
 
   </div>
@@ -116,53 +118,27 @@
         });
     }
 
-    function login() {
-      const username = document.getElementById("login-username").value;
-      const password = document.getElementById("login-password").value;
-
-      if (!username || !password) return alert("Fill all fields!");
-
-      // Get email from Firestore
-      db.collection("users").where("username", "==", username).get()
-        .then(snapshot => {
-          if (snapshot.empty) {
-            alert("Username not found.");
-            return;
-          }
-
-          const email = snapshot.docs[0].data().email;
-
-          return auth.signInWithEmailAndPassword(email, password);
-        })
-        .then(() => {
-          alert("Login successful!");
-          window.location.href = "https://arjun201301.github.io/welcome/";
-        })
-        .catch(error => {
-          if (error) alert("Login error: " + error.message);
-        });
-    }
     function resetPassword() {
-  const username = prompt("Enter your username to reset your password:");
-  if (!username) return;
+  const email = document.getElementById("reset-email").value;
+  if (!email) return alert("Please enter your email to reset password.");
 
-  // Find email by username
-  db.collection("users").where("username", "==", username).get()
+  // Look up the username
+  db.collection("users").where("email", "==", email).get()
     .then(snapshot => {
       if (snapshot.empty) {
-        alert("Username not found.");
+        alert("No user found with this email.");
         return;
       }
 
-      const email = snapshot.docs[0].data().email;
+      const username = snapshot.docs[0].data().username;
 
-      return auth.sendPasswordResetEmail(email);
-    })
-    .then(() => {
-      alert("📧 Password reset email sent! Check your inbox.");
-    })
-    .catch(error => {
-      alert("Error: " + error.message);
+      auth.sendPasswordResetEmail(email)
+        .then(() => {
+          alert(`Password reset email sent to ${email} for user "${username}"`);
+        })
+        .catch(error => {
+          alert("Error sending reset email: " + error.message);
+        });
     });
 }
 
