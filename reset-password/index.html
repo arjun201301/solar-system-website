@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Reset Password</title>
+  <style>
+    body {
+      background-color: #FFD700;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding-top: 100px;
+    }
+    input, button {
+      padding: 10px;
+      font-size: 16px;
+      margin: 10px;
+      width: 250px;
+    }
+  </style>
+</head>
+<body>
+  <h2>🔐 Reset Your Password</h2>
+  <input type="email" id="email" placeholder="Enter your email" /><br>
+  <button onclick="sendReset()">Send Password Reset Email</button>
+
+  <script src="https://www.gstatic.com/firebasejs/10.5.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.5.2/firebase-auth-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAg7LaSMIx6Paylbzfb8t_Y_2V_HEHM_ec",
+      authDomain: "solar-system-auth.firebaseapp.com",
+      projectId: "solar-system-auth",
+      storageBucket: "solar-system-auth.appspot.com",
+      messagingSenderId: "838410269137",
+      appId: "1:838410269137:web:0f0f8965eb08eb28f1b0f0"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    function sendReset() {
+      const email = document.getElementById("email").value;
+      if (!email) {
+        alert("Please enter your email.");
+        return;
+      }
+      auth.sendPasswordResetEmail(email)
+        .then(() => {
+          alert("Reset email sent successfully!");
+        })
+        .catch(error => {
+          alert("Error: " + error.message);
+        });
+    }
+  </script>
+</body>
+</html>
