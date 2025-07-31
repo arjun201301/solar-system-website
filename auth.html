@@ -57,12 +57,14 @@
     <p class="link">Already have an account? <a href="#" onclick="toggleForms(true)">Login</a></p>
 
     <div id="login-section" style="display:none;">
-      <h2>🔐 Login</h2>
-      <input type="text" id="login-username" placeholder="Username" required><br>
-      <input type="password" id="login-password" placeholder="Password" required><br>
-      <button onclick="login()">Login</button>
-      <p class="link">Don't have an account? <a href="#" onclick="toggleForms(false)">Sign Up</a></p>
-    </div>
+  <h2>🔐 Login</h2>
+  <input type="text" id="login-username" placeholder="Username" required><br>
+  <input type="password" id="login-password" placeholder="Password" required><br>
+  <button onclick="login()">Login</button>
+  <p class="link"><a href="#" onclick="resetPassword()">Forgot Password?</a></p>
+  <p class="link">Don't have an account? <a href="#" onclick="toggleForms(false)">Sign Up</a></p>
+</div>
+
   </div>
 
   <script>
@@ -140,6 +142,30 @@
           if (error) alert("Login error: " + error.message);
         });
     }
+    function resetPassword() {
+  const username = prompt("Enter your username to reset your password:");
+  if (!username) return;
+
+  // Find email by username
+  db.collection("users").where("username", "==", username).get()
+    .then(snapshot => {
+      if (snapshot.empty) {
+        alert("Username not found.");
+        return;
+      }
+
+      const email = snapshot.docs[0].data().email;
+
+      return auth.sendPasswordResetEmail(email);
+    })
+    .then(() => {
+      alert("📧 Password reset email sent! Check your inbox.");
+    })
+    .catch(error => {
+      alert("Error: " + error.message);
+    });
+}
+
   </script>
 </body>
 </html>
